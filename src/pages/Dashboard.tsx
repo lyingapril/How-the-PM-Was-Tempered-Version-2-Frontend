@@ -1,231 +1,193 @@
-import React from 'react';
-import { Card, Typography, Row, Col, Statistic, Table, Tag } from 'antd';
-import { ArrowUpOutlined, ArrowDownOutlined, ClockCircleOutlined } from '@ant-design/icons';
-import { Line, Pie } from '@ant-design/plots';
+import { useEffect } from 'react';
+import { Card, Row, Col, Statistic, Progress, Tag } from 'antd';
+import { 
+  OrderedListOutlined as DemandOutlined, 
+  BranchesOutlined as VersionOutlined, 
+  FileTextOutlined,
+  AlertOutlined
+} from '@ant-design/icons';
+import { 
+  PieChart, Pie, Cell, 
+  XAxis, YAxis, Tooltip, 
+  LineChart, Line 
+} from 'recharts';
+import { useDashboardStore } from '../store/dashboardStore';
+import { initDashboardStats } from '../store/dashboardStore';
+import { DemandStatus, DemandPriority, DocumentStatus } from '../types';
 
-const { Title, Text } = Typography;
-
-// 模拟数据指标
-const metricData = [
-  { title: '总需求数', value: 128, change: 12, status: 'up' },
-  { title: '已上线需求', value: 86, change: 8, status: 'up' },
-  { title: '延期需求', value: 12, change: -3, status: 'down' },
-  { title: '用户反馈数', value: 356, change: 42, status: 'up' },
-];
-
-// 需求状态分布数据
-const demandStatusData = [
-  { type: '待评审', value: 24 },
-  { type: '开发中', value: 38 },
-  { type: '测试中', value: 16 },
-  { type: '已上线', value: 86 },
-];
-
-// 需求优先级分布数据
-const priorityData = [
-  { type: '高', value: 42 },
-  { type: '中', value: 56 },
-  { type: '低', value: 30 },
-];
-
-// 月度需求趋势数据
-const monthlyTrendData = [
-  { month: '6月', 新增需求: 18, 已完成: 15 },
-  { month: '7月', 新增需求: 25, 已完成: 20 },
-  { month: '8月', 新增需求: 32, 已完成: 28 },
-  { month: '9月', 新增需求: 29, 已完成: 22 },
-  { month: '10月', 新增需求: 44, 已完成: 31 },
-];
-
-// 最近需求进度数据
-const recentDemandData = [
-  {
-    id: '1',
-    title: '优化用户注册流程',
-    status: '开发中',
-    progress: 60,
-    deadline: '2023-10-30'
+// 颜色映射
+const COLORS = {
+  demandStatus: {
+    [DemandStatus.PENDING]: '#FAAD14',
+    [DemandStatus.DEVELOPING]: '#1890FF',
+    [DemandStatus.TESTING]: '#722ED1',
+    [DemandStatus.ONLINE]: '#52C41A',
+    [DemandStatus.REJECTED]: '#F5222D',
   },
-  {
-    id: '2',
-    title: '增加数据导出功能',
-    status: '待评审',
-    progress: 0,
-    deadline: '2023-11-15'
+  priority: {
+    [DemandPriority.HIGH]: '#F5222D',
+    [DemandPriority.MEDIUM]: '#FAAD14',
+    [DemandPriority.LOW]: '#52C41A',
   },
-  {
-    id: '3',
-    title: '优化移动端适配',
-    status: '测试中',
-    progress: 80,
-    deadline: '2023-10-25'
-  },
-  {
-    id: '4',
-    title: '增加深色模式',
-    status: '规划中',
-    progress: 0,
-    deadline: '2023-12-10'
-  },
-];
+  documentStatus: {
+    [DocumentStatus.DRAFT]: '#FAAD14',
+    [DocumentStatus.PUBLISHED]: '#52C41A',
+    [DocumentStatus.ARCHIVED]: '#8C8C8C',
+  }
+};
 
-const DashboardPage: React.FC = () => {
-  // 状态标签样式
-  const getStatusTag = (status: string) => {
-    const statusConfig = {
-      '待评审': { color: 'default', text: '待评审' },
-      '开发中': { color: 'processing', text: '开发中' },
-      '测试中': { color: 'warning', text: '测试中' },
-      '已上线': { color: 'success', text: '已上线' },
-      '规划中': { color: 'info', text: '规划中' },
-    };
-    
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig['待评审'];
-    return <Tag color={config.color}>{config.text}</Tag>;
-  };
+const DashboardPage = () => {
+  const { demandStats, roadmapStats, documentStats } = useDashboardStore();
 
-  // 折线图配置
-  const lineConfig = {
-    data: monthlyTrendData,
-    xField: 'month',
-    yField: ['新增需求', '已完成'],
-    point: {
-      size: 5,
-      shape: 'diamond',
-    },
-    legend: {
-      position: 'top',
-    },
-  };
-
-  // 饼图配置 - 需求状态分布
-  const statusPieConfig = {
-    data: demandStatusData,
-    angleField: 'value',
-    colorField: 'type',
-    radius: 0.8,
-    label: {
-      type: 'spider',
-      labelHeight: 28,
-    },
-  };
-
-  // 饼图配置 - 优先级分布
-  const priorityPieConfig = {
-    data: priorityData,
-    angleField: 'value',
-    colorField: 'type',
-    radius: 0.8,
-    label: {
-      type: 'spider',
-      labelHeight: 28,
-    },
-    color: ['#f5222d', '#faad14', '#52c41a'],
-  };
-
-  // 最近需求表格列配置
-  const demandColumns = [
-    {
-      title: '需求标题',
-      dataIndex: 'title',
-      key: 'title',
-    },
-    {
-      title: '状态',
-      dataIndex: 'status',
-      key: 'status',
-      render: (status: string) => getStatusTag(status),
-    },
-    {
-      title: '进度',
-      dataIndex: 'progress',
-      key: 'progress',
-      render: (progress: number) => (
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <div style={{
-            width: '100px',
-            height: '6px',
-            background: '#e8e8e8',
-            borderRadius: '3px',
-            overflow: 'hidden',
-            marginRight: 8
-          }}>
-            <div style={{
-              height: '100%',
-              background: '#1890ff',
-              width: `${progress}%`
-            }} />
-          </div>
-          <Text>{progress}%</Text>
-        </div>
-      ),
-    },
-    {
-      title: '截止日期',
-      dataIndex: 'deadline',
-      key: 'deadline',
-      render: (deadline: string) => (
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <ClockCircleOutlined style={{ fontSize: '14px', marginRight: 4, color: '#faad14' }} />
-          <Text>{deadline}</Text>
-        </div>
-      ),
-    },
-  ];
+  // 初始化数据（监听其他模块数据变化时重新计算）
+  useEffect(() => {
+    initDashboardStats();
+    // 监听需求/版本/文档变化，实时更新看板（简化：每30秒刷新一次）
+    const timer = setInterval(initDashboardStats, 30000);
+    return () => clearInterval(timer);
+  }, []);
 
   return (
-    <div>
-      <Title level={3}>数据仪表盘</Title>
-      
-      {/* 核心指标卡片 */}
-      <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
-        {metricData.map((metric, index) => (
-          <Col span={6} key={index}>
-            <Card>
-              <Statistic
-                title={metric.title}
-                value={metric.value}
-                precision={0}
-                valueStyle={{ 
-                  color: metric.status === 'up' ? '#52c41a' : '#f5222d' 
-                }}
-                prefix={metric.status === 'up' ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
-                suffix={`${metric.change}%`}
-              />
-            </Card>
-          </Col>
-        ))}
-      </Row>
-
-      {/* 图表区域 */}
-      <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
-        <Col span={12}>
-          <Card title="月度需求趋势">
-            <Line {...lineConfig} />
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card title="需求状态分布">
-            <Pie {...statusPieConfig} />
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card title="需求优先级分布">
-            <Pie {...priorityPieConfig} />
-          </Card>
-        </Col>
-      </Row>
-
-      {/* 最近需求进度 */}
-      <Row>
-        <Col span={24}>
-          <Card title="最近需求进度">
-            <Table
-              columns={demandColumns}
-              dataSource={recentDemandData}
-              rowKey="id"
-              pagination={{ pageSize: 5 }}
+    <div className="dashboard-page">
+      {/* 顶部关键指标卡片 */}
+      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+        <Col xs={24} sm={12} lg={6}>
+          <Card>
+            <Statistic 
+              title="总需求数" 
+              value={Object.values(demandStats.byStatus).reduce((a, b) => a + b, 0)} 
+              prefix={<DemandOutlined />}
             />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={6}>
+          <Card>
+            <Statistic 
+              title="进行中版本" 
+              value={roadmapStats.progress.filter(v => v.progress > 0 && v.progress < 100).length} 
+              prefix={<VersionOutlined />}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={6}>
+          <Card>
+            <Statistic 
+              title="已发布文档" 
+              value={documentStats.byStatus[DocumentStatus.PUBLISHED] || 0} 
+              prefix={<FileTextOutlined />}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={6}>
+          <Card>
+            <Statistic 
+              title="延期版本" 
+              value={roadmapStats.delayed} 
+              prefix={<AlertOutlined />}
+              valueStyle={{ color: roadmapStats.delayed > 0 ? '#F5222D' : '#52C41A' }}
+            />
+          </Card>
+        </Col>
+      </Row>
+
+      {/* 中间图表区域 */}
+      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+        {/* 需求状态分布 */}
+        <Col xs={24} lg={12}>
+          <Card title="需求状态分布">
+            <PieChart width={300} height={300}>
+              <Pie
+                data={Object.entries(demandStats.byStatus).filter(([_, count]) => count > 0).map(([status, count]) => ({ name: status, value: count }))}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
+                outerRadius={50}
+              >
+                {Object.entries(demandStats.byStatus).map(([status]) => (
+                  <Cell key={status} fill={COLORS.demandStatus[status as DemandStatus]} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </Card>
+        </Col>
+
+        {/* 需求优先级分布 */}
+        <Col xs={24} lg={12}>
+          <Card title="需求优先级分布">
+            <PieChart width={300} height={300}>
+              <Pie
+                data={Object.entries(demandStats.byPriority).filter(([_, count]) => count > 0).map(([prio, count]) => ({ name: prio, value: count }))}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
+                outerRadius={50}
+              >
+                {Object.entries(demandStats.byPriority).map(([prio]) => (
+                  <Cell key={prio} fill={COLORS.priority[prio as DemandPriority]} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </Card>
+        </Col>
+      </Row>
+
+      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+        {/* 需求创建趋势 */}
+        <Col xs={24}>
+          <Card title="近30天需求创建趋势">
+            <LineChart data={demandStats.trend} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+              <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+              <YAxis />
+              <Tooltip />
+              <Line type="monotone" dataKey="count" stroke="#1890FF" />
+            </LineChart>
+          </Card>
+        </Col>
+      </Row>
+
+      <Row gutter={[16, 16]}>
+        {/* 版本进度 */}
+        <Col xs={24} lg={16}>
+          <Card title="版本进度跟踪">
+            {roadmapStats.progress.map((item) => (
+              <div key={item.version} style={{ marginBottom: 16 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <span>{item.version}</span>
+                  <span>{item.completed}/{item.total} 需求（{item.progress}%）</span>
+                </div>
+                <Progress percent={item.progress} status={item.progress === 100 ? 'success' : undefined} />
+              </div>
+            ))}
+          </Card>
+        </Col>
+
+        {/* 文档指标 */}
+        <Col xs={24} lg={8}>
+          <Card title="文档状态与覆盖率">
+            <div style={{ marginBottom: 24 }}>
+              <h4 style={{ marginBottom: 8 }}>文档状态分布</h4>
+              {Object.entries(documentStats.byStatus).map(([status, count]) => (
+                <div key={status} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <Tag color={COLORS.documentStatus[status as DocumentStatus]} style={{ marginRight: 8 }}>
+                      {status}
+                    </Tag>
+                  </div>
+                  <span>{count} 份</span>
+                </div>
+              ))}
+            </div>
+            <div>
+              <h4 style={{ marginBottom: 8 }}>需求文档覆盖率</h4>
+              <Progress percent={documentStats.demandCoverage} status={documentStats.demandCoverage > 80 ? 'success' : undefined} />
+              <p style={{ textAlign: 'right', marginTop: 4, fontSize: 12 }}>
+                {documentStats.demandCoverage}% 需求已关联文档
+              </p>
+            </div>
           </Card>
         </Col>
       </Row>

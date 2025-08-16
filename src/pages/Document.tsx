@@ -104,14 +104,14 @@ const DocumentPage = () => {
       render: (tags: any[]) => {
         if (tags.length > 2) {
           return (
-            <Space size="small">
+            <Space size="small" direction="vertical">
               {tags.slice(0, 2).map(tag => <Tag key={tag}>{tag}</Tag>)}
               <Tag>{`+${tags.length - 2}`}</Tag>
             </Space>
           );
         }
         return (
-          <Space size="small" direction="vertical">
+          <Space size="small">
             {tags.map(tag => <Tag key={tag}>{tag}</Tag>)}
           </Space>
         );

@@ -9,23 +9,84 @@ const initialRoadmap: RoadmapItem[] = [
     id: 'v1',
     version: 'V1.0',
     status: RoadmapStatus.COMPLETED,
-    startTime: '2024-06-01',
-    endTime: '2024-08-30',
+    startTime: '2025-06-01',
+    endTime: '2025-08-30',
     description: '核心功能上线：用户注册、需求管理基础功能',
-    demandIds: ['1'], // 关联需求ID
+    demandIds: ['1', '7'], // 关联需求：注册优化、安卓图片上传修复
     owner: '产品经理A',
   },
   {
     id: 'v2',
     version: 'V2.0',
     status: RoadmapStatus.DEVELOPING,
-    startTime: '2024-09-01',
-    endTime: '2024-11-30',
-    description: '新增Roadmap规划、文档中心功能',
-    demandIds: ['2'],
+    startTime: '2025-09-01',
+    endTime: '2025-11-30',
+    description: '新增Roadmap规划、文档中心功能，优化订单流程',
+    demandIds: ['2', '8', '10'], // 关联需求：会员体系、订单取消、购物车优化
     owner: '产品经理A',
   },
+  {
+    id: 'v3',
+    version: 'V3.0',
+    status: RoadmapStatus.PLANNING,
+    startTime: '2025-12-01',
+    endTime: '2026-02-28',
+    description: '数据看板与用户画像系统上线，支持精准运营',
+    demandIds: ['6', '14'], // 关联需求：用户画像、推送策略
+    owner: '产品经理C',
+  },
+  {
+    id: 'v4',
+    version: 'V2.1',
+    status: RoadmapStatus.PLANNING,
+    startTime: '2025-10-15',
+    endTime: '2025-11-15',
+    description: 'V2.0补丁版本：修复支付bug，优化首页性能',
+    demandIds: ['3', '5'], // 关联需求：iOS支付修复、首页加载优化
+    owner: '开发工程师B',
+  },
+  {
+    id: 'v5',
+    version: 'V3.1',
+    status: RoadmapStatus.PLANNING,
+    startTime: '2026-03-01',
+    endTime: '2026-04-30',
+    description: '会员积分体系完善，支持积分兑换',
+    demandIds: ['15'], // 关联需求：积分兑换功能
+    owner: '产品经理C',
+  },
+  {
+    id: 'v6',
+    version: 'V1.5',
+    status: RoadmapStatus.COMPLETED,
+    startTime: '2025-07-15',
+    endTime: '2025-08-15',
+    description: 'V1.0增强版：新增搜索历史与轮播图修复',
+    demandIds: ['4', '12'], // 关联需求：搜索历史、轮播图修复
+    owner: '产品经理A',
+  },
+  {
+    id: 'v7',
+    version: 'V4.0',
+    status: RoadmapStatus.PLANNING,
+    startTime: '2026-05-01',
+    endTime: '2026-07-31',
+    description: '商家端功能升级，支持数据导出与商品视频',
+    demandIds: ['11', '13'], // 关联需求：数据导出、商品视频展示
+    owner: '商家运营H',
+  },
+  {
+    id: 'v8',
+    version: 'V2.2',
+    status: RoadmapStatus.PLANNING,
+    startTime: '2025-11-01',
+    endTime: '2025-11-20',
+    description: '帮助中心与用户反馈系统',
+    demandIds: ['9'], // 关联需求：帮助中心页面
+    owner: '运营专员G',
+  },
 ];
+
 
 interface RoadmapStore {
   roadmapItems: RoadmapItem[];
