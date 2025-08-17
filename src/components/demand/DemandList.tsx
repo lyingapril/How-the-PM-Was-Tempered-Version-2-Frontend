@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import DemandCard from './DemandCard';
-import type { Demand } from '../../types';
+import  { type Demand, DemandPriority, DemandStatus } from '../../types';
 
 // 需求列表容器（提供拖拽环境）
 const DemandList: React.FC = () => {
@@ -12,19 +12,58 @@ const DemandList: React.FC = () => {
       id: '1',
       title: '优化登录流程',
       description: '减少登录步骤，提升用户体验',
-      priority: '高'
+      priority: DemandPriority.HIGH,
+      status: DemandStatus.PENDING,
+      riceScore: 0,
+      riceParams: {
+        reach: 0,
+        impact: 0,
+        confidence: 0,
+        effort: 0
+      },
+      tags: [],
+      creator: '',
+      createdAt: '',
+      updatedAt: '',
+      productId: ''
     },
     {
       id: '2',
       title: '新增数据仪表盘',
       description: '展示核心指标趋势',
-      priority: '中'
+      priority: DemandPriority.MEDIUM,
+      status: DemandStatus.PENDING,
+      riceScore: 0,
+      riceParams: {
+        reach: 0,
+        impact: 0,
+        confidence: 0,
+        effort: 0
+      },
+      tags: [],
+      creator: '',
+      createdAt: '',
+      updatedAt: '',
+      productId: ''
     },
     {
       id: '3',
       title: '修复移动端适配问题',
       description: '解决iPhone SE等小屏设备显示异常',
-      priority: '高'
+      priority: DemandPriority.LOW,
+      status: DemandStatus.PENDING,
+      riceScore: 0,
+      riceParams: {
+        reach: 0,
+        impact: 0,
+        confidence: 0,
+        effort: 0
+      },
+      tags: [],
+      creator: '',
+      createdAt: '',
+      updatedAt: '',
+      productId: ''
     }
   ]);
 
